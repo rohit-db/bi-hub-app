@@ -3,14 +3,14 @@
 # See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
 
 bundle:
-  name: qvc-bi-hub-app
+  name: lce-bi-hub-app
 
 # Variables for environment-specific configuration
 variables:
   
   app_name:
     description: "App name"
-    default: "qvc-ai-agent"
+    default: "lce-ai-agent"
 
   lakebase_instance_name:
     description: "Database instance name"
@@ -43,69 +43,6 @@ targets:
     default: true
     workspace:
       host: https://adb-984752964297111.11.azuredatabricks.net
-
-    resources:
-      jobs:
-        setup_lakebase:
-          name: "setup-lakebase-dev"
-          description: "Setup Lakebase PostgreSQL database and tables for development"
-          tasks:
-            - task_key: "setup_database"
-              notebook_task:
-                notebook_path: "./src/scripts/setup_chainlit_lakebase.ipynb"
-              environment_key: "default"
-          environments:
-            - environment_key: "default"
-              spec:
-                environment_version: "4"
-                dependencies:
-                  - sqlalchemy==2.0.43
-                  - psycopg[binary]==3.2.9
-                  - databricks-sdk==0.65.0
-          parameters:
-            - name: instance_name
-              default: ${var.lakebase_instance_name}
-            - name: database
-              default: ${var.lakebase_database_name}
-            - name: app_name
-              default: ${var.app_name}
-            - name: port
-              default: "5432"
-          permissions:
-            - level: "CAN_MANAGE"
-              user_name: ${var.user_name}
-
-      database_instances:
-        lakebase_postgres:
-          name: ${var.lakebase_instance_name}
-          capacity: "CU_1"
-      
-      apps:
-        bi-agent:
-          name: ${var.app_name} 
-          description: "AI-powered Business Intelligence Agent"
-          resources:
-              - name: agent-endpoint
-                serving_endpoint:
-                  name: ${var.model_endpoint_name}
-                  permission: "CAN_QUERY"
-              - database:
-                  database_name: ${var.lakebase_database_name}
-                  instance_name: ${var.lakebase_instance_name}
-                  permission: CAN_CONNECT_AND_CREATE
-                name: database
-          user_api_scopes: ["serving.serving-endpoints"]
-          source_code_path: ./src/app
-          permissions:
-            - level: "CAN_USE"
-              user_name: ${var.user_name}
-  
-  e2-demo:
-    mode: development
-    default: true
-    workspace:
-      # host: https://adb-984752964297111.11.azuredatabricks.net
-      host: https://e2-demo-field-eng.cloud.databricks.com/
 
     resources:
       jobs:
