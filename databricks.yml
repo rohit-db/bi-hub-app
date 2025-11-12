@@ -31,7 +31,7 @@ variables:
   
   user_name:
     description: "User name for permissions"
-    default: "rohit.bhagwat@databricks.com"
+    default: "<<USER_NAME>>"
 
 sync:
   exclude:
@@ -42,7 +42,7 @@ targets:
     mode: development
     default: true
     workspace:
-      host: https://adb-984752964297111.11.azuredatabricks.net
+      host: "<<WORKSPACE_HOST>>"
 
     resources:
       jobs:
