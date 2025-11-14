@@ -44,7 +44,7 @@ class Settings(BaseSettings):
 
     chat_starter_messages: List[Dict[str, str]] = [
         {"label": "Revenue Analytics", "message": "Analyze monthly revenue in the last 12 months"}, 
-        {"label": "Hot and Ready Performance", "message": "Analyze the performance of Hot and Ready products in the last 12 months"}
+        {"label": "Inventory Analytics", "message": "Analyze the inventory levels of all products in the last 12 months"}
     ]
 
     # Local Only

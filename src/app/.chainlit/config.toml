@@ -61,7 +61,7 @@ enable_thread_management = true
 
 [UI]
 # Name of the assistant
-name = "QVC AI Agent"
+name = "Ferguson AI Agent"
 
 # Sidebar configuration
 default_sidebar_state = "open"
