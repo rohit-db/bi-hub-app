@@ -1,4 +1,4 @@
-chainlit==2.7.2
+chainlit==2.11.1
 databricks-sdk==0.65.0
 sqlalchemy==2.0.43
 openai==1.106.1
