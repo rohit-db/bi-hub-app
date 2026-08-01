@@ -19,6 +19,11 @@ env:
   - name: DATABASE_INSTANCE
     value: "<your-lakebase-instance-name>"
 
+  # PGDATABASE: Lakebase PostgreSQL database name (config.py reads this as pg_database).
+  # PGHOST, PGPORT, PGUSER are auto-injected by the Lakebase database resource binding.
+  - name: PGDATABASE
+    value: "databricks_postgres"
+
   - name: ENABLE_HEADER_AUTH
     value: true
 

@@ -43,9 +43,8 @@ targets:
   dev:
     mode: development
     default: true
-    workspace:
-      host: https://adb-984752964297111.11.azuredatabricks.net
-    
+    # workspace.host is NOT pinned here — it comes from the CLI profile at deploy time.
+    # Use: databricks bundle deploy -p <your-profile>
     resources:
       jobs:
         setup_lakebase:
