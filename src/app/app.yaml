@@ -5,8 +5,19 @@ env:
   - name: CHAINLIT_AUTH_SECRET
     value: "F8*9Z/LVfsoHzEt_/IvaI4s1-.1cd/bQ%Bmd5w5$FcXP$ga=taQR_,YE9Q91xnSG"
 
-  # SERVING_ENDPOINT and DATABASE_INSTANCE are injected via databricks.yml
-  # app config.env block. Override locally in .env for development.
+  # Override these with workspace-specific values for each deployment.
+  # For local development, set them in src/app/.env instead.
+  - name: SERVING_ENDPOINT
+    value: "<your-serving-endpoint>"
+
+  - name: GENIE_SPACE_ID
+    value: "<your-genie-space-id>"
+
+  - name: REASONING_MODEL
+    value: "databricks-claude-sonnet-4-5"
+
+  - name: DATABASE_INSTANCE
+    value: "<your-lakebase-instance-name>"
 
   - name: ENABLE_HEADER_AUTH
     value: true
