@@ -70,10 +70,9 @@ show_sidebar = true
 # Chain of Thought display mode
 cot = "full"
 
-# Custom Spirit Airlines branding
+# Custom branding — override logo and CSS for your deployment
 custom_css = "public/css/custom-branding.css"
 
-# Spirit Airlines logo and branding
 logo_file_url = "public/images/logo.svg"
 login_page_image = "public/images/logo.svg"
 

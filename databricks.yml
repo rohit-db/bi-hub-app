@@ -7,31 +7,66 @@ bundle:
 
 # Variables for environment-specific configuration
 variables:
-  
+
   app_name:
     description: "App name"
     default: "bi-agent"
 
   lakebase_instance_name:
-    description: "Database instance name"
+    description: "Lakebase PostgreSQL instance name"
     default: "bi-agent-chat-session"
 
+  # Serving endpoint — supply a real MAS or single-model endpoint for your workspace.
+  serving_endpoint:
+    description: "Databricks model serving endpoint name (MAS or single-model)"
+    default: "<your-serving-endpoint>"
+
+  # Deprecated alias kept for backward compat; prefer serving_endpoint above.
   model_endpoint_name:
-    description: "Databricks model serving endpoint name"
-    default: "mas-1a0aee60-endpoint"
-  
-  # Catalog configuration
-  lakebase_database_name:
-    description: "Database name for database resources"
+    description: "Alias for serving_endpoint (deprecated)"
+    default: "<your-serving-endpoint>"
+
+  # Genie space — supply the space ID from your workspace.
+  genie_space_id:
+    description: "Databricks Genie space ID"
+    default: "01xxxxxxxxxxxxxxxxxxxxxxxxx"
+
+  # Reasoning / foundation model
+  reasoning_model:
+    description: "Foundation model for the reasoning agent"
+    default: "databricks-claude-sonnet-4-5"
+
+  # Catalog / schema where synced tables live
+  catalog:
+    description: "Unity Catalog catalog name"
+    default: "main"
+
+  schema:
+    description: "Schema name inside the catalog"
+    default: "bi_agent"
+
+  # SQL warehouse for Genie and ad-hoc queries
+  warehouse_id:
+    description: "Databricks SQL warehouse ID"
+    default: "<your-warehouse-id>"
+
+  # Lakebase database configuration
+  lakebase_database:
+    description: "Lakebase PostgreSQL database name"
     default: "databricks_postgres"
-  
+
+  # Legacy alias kept for existing job references
+  lakebase_database_name:
+    description: "Alias for lakebase_database (legacy)"
+    default: "databricks_postgres"
+
   synced_catalog_name:
-    description: "Catalog name for database resources"
+    description: "Catalog name for Lakebase synced tables"
     default: "bi_agent_chat_sessions"
-  
+
   user_name:
-    description: "User name for permissions"
-    default: "rohit.bhagwat@databricks.com"
+    description: "Workspace user name for permissions"
+    default: "<your-email@example.com>"
 
 sync:
   exclude:
@@ -82,18 +117,30 @@ targets:
       
       apps:
         bi-agent:
-          name: ${var.app_name} 
+          name: ${var.app_name}
           description: "AI-powered Business Intelligence Agent"
           resources:
-              - name: agent-endpoint
-                serving_endpoint:
-                  name: ${var.model_endpoint_name}
-                  permission: "CAN_QUERY"
-              - database:
-                  database_name: ${var.lakebase_database_name}
-                  instance_name: ${var.lakebase_instance_name}
-                  permission: CAN_CONNECT_AND_CREATE
-                name: database
+            - name: agent-endpoint
+              serving_endpoint:
+                name: ${var.serving_endpoint}
+                permission: "CAN_QUERY"
+            - name: database
+              database:
+                database_name: ${var.lakebase_database}
+                instance_name: ${var.lakebase_instance_name}
+                permission: CAN_CONNECT_AND_CREATE
+          config:
+            env:
+              - name: SERVING_ENDPOINT
+                value: ${var.serving_endpoint}
+              - name: GENIE_SPACE_ID
+                value: ${var.genie_space_id}
+              - name: REASONING_MODEL
+                value: ${var.reasoning_model}
+              - name: DATABASE_INSTANCE
+                value: ${var.lakebase_instance_name}
+              - name: PGDATABASE
+                value: ${var.lakebase_database}
           user_api_scopes: ["serving.serving-endpoints"]
           source_code_path: ./src/app
           permissions:

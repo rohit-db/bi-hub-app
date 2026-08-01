@@ -55,18 +55,19 @@ class Settings(BaseSettings):
         base = host if host.startswith("https://") else f"https://{host}"
         return f"{base}/api/2.0/mcp/genie/{space_id}"
 
-    # Available agents (MAS or Genie One)
-    available_agents: List[Dict[str, str]] = [
-        {"name": "Alaska Airlines MAS", "kind": "mas", "endpoint": "alaska-airlines-mas"},
-    ]
+    # Available agents (MAS or Genie One) — deployed via AVAILABLE_AGENTS env / DAB var.
+    # Empty by default; a deployer supplies agents for their workspace.
+    available_agents: List[Dict[str, str]] = []
 
     # Chat
     history_max_turns: int = 10
     history_max_chars: int = 120000
 
     chat_starter_messages: List[Dict[str, str]] = [
-        {"label": "Revenue Analytics", "message": "Analyze the overall revenue by Segments in 2024"},
-        {"label": "Route Performance", "message": "Analyze the performance of FLL to LAS in 2024"}
+        {"label": "Key Metrics", "message": "Summarize key metrics for the last quarter"},
+        {"label": "Top Revenue Items", "message": "Show top 10 items by revenue"},
+        {"label": "Category Breakdown", "message": "Break down results by category"},
+        {"label": "Monthly Trend", "message": "Show month-over-month trend"},
     ]
 
     # Local Only

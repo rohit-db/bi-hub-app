@@ -1,24 +1,15 @@
 command: ['chainlit', 'run', 'app.py']
 
 
-env: 
+env:
   - name: CHAINLIT_AUTH_SECRET
     value: "F8*9Z/LVfsoHzEt_/IvaI4s1-.1cd/bQ%Bmd5w5$FcXP$ga=taQR_,YE9Q91xnSG"
 
-  - name: DATABASE_INSTANCE
-    value: "bi-agent-chat-session"
-
-  - name: SERVING_ENDPOINT
-    value: "mas-1a0aee60-endpoint"
+  # SERVING_ENDPOINT and DATABASE_INSTANCE are injected via databricks.yml
+  # app config.env block. Override locally in .env for development.
 
   - name: ENABLE_HEADER_AUTH
     value: true
 
   - name: ENABLE_PASSWORD_AUTH
     value: false
-
-  # - name: DATABASE_INSTANCE
-  #   valueFrom: lakebase_postgres
-    
-  # - name: SERVING_ENDPOINT
-  #   valueFrom: ${var.model_endpoint_name}
