@@ -35,13 +35,49 @@ async def test_stream_surfaces_errors_as_response_error(monkeypatch):
     assert seen and seen[-1]["type"] == "response.error"
 
 
-def test_translate_tool_call_and_message():
+class _E:  # minimal attribute stand-in for SDK events/items
+    def __init__(self, **k): self.__dict__.update(k)
+
+
+def test_translate_tool_call_reads_tool_name_and_arguments():
     from agent.reasoning_agent import _translate
-    class E:  # minimal stand-ins
-        def __init__(self, **k): self.__dict__.update(k)
-    tool = E(type="run_item_stream_event",
-             item=E(type="tool_call_item", name="genie", arguments="{}"))
-    msg = E(type="run_item_stream_event",
-            item=E(type="message_output_item", raw_item="hi"))
-    assert _translate(tool)[0]["item"]["type"] == "function_call"
-    assert _translate(msg)[0]["item"]["type"] == "message"
+    # openai-agents 0.18.x ToolCallItem exposes .tool_name (property), .arguments
+    ev = _E(type="run_item_stream_event",
+            item=_E(type="tool_call_item", tool_name="query_genie", arguments='{"q":"revenue"}'))
+    out = _translate(ev)
+    assert out[0]["item"]["type"] == "function_call"
+    assert out[0]["item"]["name"] == "query_genie"
+    assert out[0]["item"]["arguments"] == '{"q":"revenue"}'
+
+
+def test_translate_tool_output_reads_call_id_and_output():
+    from agent.reasoning_agent import _translate
+    ev = _E(type="run_item_stream_event",
+            item=_E(type="tool_call_output_item", call_id="call_123", output="42 rows"))
+    out = _translate(ev)
+    assert out[0]["item"]["type"] == "function_call_output"
+    assert out[0]["item"]["call_id"] == "call_123"
+    assert out[0]["item"]["output"] == "42 rows"
+
+
+def test_translate_message_uses_content_text_fallback():
+    from agent.reasoning_agent import _translate
+    # No `agents` SDK installed here, so ItemHelpers import fails and we fall
+    # back to walking raw_item.content -> concatenated .text parts.
+    raw = _E(content=[_E(text="Hello "), _E(text="world")])
+    ev = _E(type="run_item_stream_event", item=_E(type="message_output_item", raw_item=raw))
+    out = _translate(ev)
+    assert out[0]["item"]["type"] == "message"
+    assert out[0]["item"]["content"][0]["text"] == "Hello world"
+
+
+def test_translate_text_delta_guards_on_data_type():
+    from agent.reasoning_agent import _translate
+    # A real text delta is forwarded...
+    good = _E(type="raw_response_event",
+              data=_E(type="response.output_text.delta", delta="hi"))
+    assert _translate(good)[0]["type"] == "response.output_text.delta"
+    # ...but a non-text raw event carrying an unrelated .delta is NOT.
+    other = _E(type="raw_response_event",
+               data=_E(type="response.function_call_arguments.delta", delta="{"))
+    assert _translate(other) == []
