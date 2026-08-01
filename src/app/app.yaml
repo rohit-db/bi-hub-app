@@ -19,6 +19,13 @@ env:
   - name: DATABASE_INSTANCE
     value: "<your-lakebase-instance-name>"
 
+  # AVAILABLE_AGENTS: JSON list of user-selectable agents shown in the agent
+  # picker. Each entry has a "kind": "mas" (routes to a MAS/serving endpoint via
+  # "endpoint") or "genie_one" (routes to the in-app reasoning agent + Genie MCP
+  # via "genie_space_id"). Example with one of each:
+  - name: AVAILABLE_AGENTS
+    value: '[{"name":"BI Supervisor (MAS)","kind":"mas","endpoint":"<your-serving-endpoint>"},{"name":"Genie One (Direct)","kind":"genie_one","genie_space_id":"<your-genie-space-id>"}]'
+
   # PGDATABASE: Lakebase PostgreSQL database name (config.py reads this as pg_database).
   # PGHOST, PGPORT, PGUSER are auto-injected by the Lakebase database resource binding.
   - name: PGDATABASE

@@ -1,10 +1,15 @@
 chainlit==2.11.1
 databricks-sdk==0.65.0
 sqlalchemy==2.0.43
-openai==1.106.1
+# openai/pydantic floors raised so modern openai-agents (Genie One path) resolves
+# without pip backtracking. openai-agents 0.18.x requires openai>=2.45, pydantic>=2.12.
+openai>=2.45.0
+openai-agents>=0.18.3
+databricks-openai>=0.6.1
+mcp>=1.19.0
 python-dotenv==1.1.1
 psycopg[binary]==3.2.9
 greenlet==3.2.4
 pandas==2.3.2
-pydantic==2.11.7
-pydantic-settings==2.10.1
+pydantic>=2.12.2
+pydantic-settings>=2.10.1

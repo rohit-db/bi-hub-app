@@ -98,7 +98,11 @@ targets:
           # Env vars are defined in src/app/app.yaml (canonical for Databricks Apps).
           # Deployers set SERVING_ENDPOINT, GENIE_SPACE_ID, DATABASE_INSTANCE, etc.
           # in app.yaml or via .env for local development.
-          user_api_scopes: ["serving.serving-endpoints"]
+          # "serving.serving-endpoints" -> MAS/serving calls; "genie" -> required
+          # OBO scope for the managed Genie MCP server (Genie One path), otherwise
+          # the MCP call returns 403. The app service principal also needs CAN_RUN
+          # on each target Genie space.
+          user_api_scopes: ["serving.serving-endpoints", "genie"]
           source_code_path: ./src/app
           permissions:
             - level: "CAN_USE"
