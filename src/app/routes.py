@@ -101,7 +101,22 @@ async def on_chat_start():
     identity = await ensure_identity()
     logger.info("Chat started")
     if settings.available_agents:
+        # Default the session to the first agent...
         cl.user_session.set("agent", settings.available_agents[0])
+        # ...and render the agent picker so users can toggle between the
+        # configured agents (e.g. MAS vs. Genie One) via the chat settings panel.
+        # The Select id "Agent" is what on_settings_update reads.
+        agent_names = [a["name"] for a in settings.available_agents]
+        await cl.ChatSettings(
+            [
+                cl.input_widget.Select(
+                    id="Agent",
+                    label="Agent",
+                    values=agent_names,
+                    initial_index=0,
+                )
+            ]
+        ).send()
 
 
 @cl.on_message
