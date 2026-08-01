@@ -54,7 +54,7 @@ class ChainlitStream:
             if df is not None:
                 self.text_msg.content = (remainder or " ").strip()
                 try:
-                    self.text_msg.elements = [cl.Dataframe(df=df, name="Results")]
+                    self.text_msg.elements = [cl.Dataframe(data=df, name="Results")]
                 except Exception:
                     self.text_msg.content = text  # fallback to raw text
             else:
