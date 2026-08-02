@@ -134,5 +134,10 @@ def setup_chainlit_schema():
         import traceback
         traceback.print_exc()
 
+# NOTE: Schema-level grants (GRANT USAGE, GRANT CREATE ON SCHEMA "public" to app SP)
+# are issued by the setup job notebook (src/scripts/setup_chainlit_lakebase.ipynb),
+# which runs as the deploying human who owns the schema. This script handles table
+# creation only and does not manage grants.
+
 if __name__ == "__main__":
     setup_chainlit_schema()
