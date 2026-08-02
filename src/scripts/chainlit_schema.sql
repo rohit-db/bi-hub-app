@@ -1,6 +1,7 @@
 -- Chainlit SQLAlchemy Schema for Lakebase
 -- Based on: https://docs.chainlit.io/data-layers/sqlalchemy
 -- Run this in your Lakebase SQL editor
+-- CANONICAL DDL lives in src/app/memory/schema.py (CHAINLIT_DDL). Keep in sync.
 
 -- ==============================================
 -- DATABASE AND SCHEMA SETUP

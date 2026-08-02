@@ -110,83 +110,12 @@ def setup_chainlit_schema():
         #     conn.commit()
         # print("✅ Cleaned up any existing tables")
         
-        # Create official Chainlit schema
+        # Create official Chainlit schema (shared source of truth: app/memory/schema.py)
         print("🔨 Creating official Chainlit schema...")
-        schema_sql = text('''
-        CREATE TABLE IF NOT EXISTS users (
-            "id" UUID PRIMARY KEY,
-            "identifier" TEXT NOT NULL UNIQUE,
-            "metadata" JSONB NOT NULL,
-            "createdAt" TEXT
-        );
-
-        CREATE TABLE IF NOT EXISTS threads (
-            "id" UUID PRIMARY KEY,
-            "createdAt" TEXT,
-            "name" TEXT,
-            "userId" UUID,
-            "userIdentifier" TEXT,
-            "tags" TEXT[],
-            "metadata" JSONB,
-            FOREIGN KEY ("userId") REFERENCES users("id") ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS steps (
-            "id" UUID PRIMARY KEY,
-            "name" TEXT NOT NULL,
-            "type" TEXT NOT NULL,
-            "threadId" UUID NOT NULL,
-            "parentId" UUID,
-            "streaming" BOOLEAN NOT NULL,
-            "waitForAnswer" BOOLEAN,
-            "isError" BOOLEAN,
-            "metadata" JSONB,
-            "tags" TEXT[],
-            "input" TEXT,
-            "output" TEXT,
-            "createdAt" TEXT,
-            "command" TEXT,
-            "start" TEXT,
-            "end" TEXT,
-            "generation" JSONB,
-            "showInput" TEXT,
-            "language" TEXT,
-            "indent" INT,
-            "defaultOpen" BOOLEAN,
-            FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS elements (
-            "id" UUID PRIMARY KEY,
-            "threadId" UUID,
-            "type" TEXT,
-            "url" TEXT,
-            "chainlitKey" TEXT,
-            "name" TEXT NOT NULL,
-            "display" TEXT,
-            "objectKey" TEXT,
-            "size" TEXT,
-            "page" INT,
-            "language" TEXT,
-            "forId" UUID,
-            "mime" TEXT,
-            "props" JSONB,
-            FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
-        );
-
-        CREATE TABLE IF NOT EXISTS feedbacks (
-            "id" UUID PRIMARY KEY,
-            "forId" UUID NOT NULL,
-            "threadId" UUID NOT NULL,
-            "value" INT NOT NULL,
-            "comment" TEXT,
-            FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
-        );
-        ''')
-        
-        with engine.connect() as conn:
-            conn.execute(schema_sql)
-            conn.commit()
+        from app.memory.schema import CHAINLIT_DDL
+        with engine.begin() as conn:
+            for stmt in CHAINLIT_DDL:
+                conn.execute(text(stmt))
         print("✅ Created official Chainlit schema")
         
         # Verify tables were created successfully
