@@ -94,6 +94,7 @@ def ensure_schema(engine=None) -> None:
     global _ensured
     if _ensured:
         return
+    created_here = engine is None
     engine = engine or create_sync_engine()
     try:
         with engine.begin() as conn:
@@ -104,3 +105,6 @@ def ensure_schema(engine=None) -> None:
     except Exception as e:
         logger.error(f"ensure_schema failed: {e}")
         raise
+    finally:
+        if created_here:
+            engine.dispose()
