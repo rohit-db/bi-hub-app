@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import memory.schema as schema
 
 
@@ -34,3 +34,16 @@ def test_ensure_schema_is_idempotent_within_process():
     schema.ensure_schema(engine=engine)
     schema.ensure_schema(engine=engine)  # second call is a no-op
     engine.begin.assert_called_once()
+
+
+def test_get_data_layer_ensures_schema_before_datalayer():
+    _reset()
+    calls = []
+    with patch("memory.layer.ensure_schema", side_effect=lambda: calls.append("ensure")) as es, \
+         patch("memory.layer.create_chainlit_data_layer",
+               side_effect=lambda: calls.append("datalayer") or MagicMock()) as dl:
+        import memory.layer as layer
+        layer.get_data_layer()
+        es.assert_called_once()
+        dl.assert_called_once()
+        assert calls == ["ensure", "datalayer"]  # ordering: schema first
