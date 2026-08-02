@@ -410,6 +410,54 @@ Mark MF1 complete only if: data intact + login works + no manual grant. Otherwis
 
 ---
 
+### Task 6: Bootstrap grant — app SP needs CREATE ON SCHEMA public (added after live verification)
+
+**Why (discovered live in Tasks 4-5):** Despite the app's `CAN_CONNECT_AND_CREATE` database binding, the app SP has only `USAGE` (not `CREATE`) on schema `public` and no database-level `CREATE`. So `ensure_schema()` running as the app SP would FAIL to create tables on a genuinely fresh database. The one-time fix, proven live, is `GRANT CREATE ON SCHEMA public TO "<app-sp-client-id>"`. The app SP cannot grant this to itself (it lacks the privilege); it must be issued by the setup job/notebook, which runs as the deploying human (who owns/can-grant on the schema). This makes a clean cookbook deploy work end-to-end.
+
+**Files:**
+- Modify: `src/scripts/setup_chainlit_lakebase.ipynb` (the job's notebook — cell that grants schema perms, cell-8).
+- Modify: `src/scripts/setup_chainlit_schema.py` (the standalone Python setup script's grant section, if present) — keep parity.
+
+**Interfaces:**
+- Consumes: `app_id = w.apps.get(name=app_name).id` (already computed in cell-8).
+- Produces: the setup job additionally runs `GRANT CREATE ON SCHEMA public TO "<app_id>"` idempotently, before/alongside the existing `GRANT USAGE ON SCHEMA` and table grants.
+
+- [ ] **Step 1: Add the CREATE-on-schema grant to the notebook's grant_schema_permissions**
+
+In `src/scripts/setup_chainlit_lakebase.ipynb` cell-8, extend `grant_schema_permissions` so it grants BOTH usage and create (create is what lets the app SP create — and thus own — the Chainlit tables at first startup):
+
+```python
+        schema_permission_sql = text(f'''
+        GRANT USAGE ON SCHEMA "public" TO "{app_id}";
+        GRANT CREATE ON SCHEMA "public" TO "{app_id}";
+        ''')
+```
+
+- [ ] **Step 2: Mirror the grant in the standalone Python setup script (parity)**
+
+If `src/scripts/setup_chainlit_schema.py` has a grant section, add the same `GRANT CREATE ON SCHEMA public` line. If it has no grant section, add a short comment there pointing to the notebook as the canonical grant location. (No functional grant path is required in both — parity/comment is enough.)
+
+- [ ] **Step 3: Validate notebook JSON + python syntax (no live run needed)**
+
+Run: `python -c "import json; json.load(open('src/scripts/setup_chainlit_lakebase.ipynb'))"` and `python -c "import ast; ast.parse(open('src/scripts/setup_chainlit_schema.py').read())"`
+Expected: both succeed (valid JSON, valid python).
+
+- [ ] **Step 4: Confirm app unit suite still passes (no regression)**
+
+Run: `cd src/app && python -m pytest -q`
+Expected: PASS (24 tests, unchanged — this task touches only scripts).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/scripts/setup_chainlit_lakebase.ipynb src/scripts/setup_chainlit_schema.py
+git commit -m "feat(lakebase): grant CREATE on public to app SP so it can own its schema"
+```
+
+**Note:** The grant was already applied LIVE on the bi-agent-chat-session instance during Task 4 (that's how fresh-create was proven). This task bakes it into the setup job so a stranger's clean cookbook deploy works without a manual step.
+
+---
+
 ## Self-Review
 
 **Spec coverage:**
