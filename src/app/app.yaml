@@ -10,6 +10,10 @@ env:
   - name: SERVING_ENDPOINT
     value: "<your-serving-endpoint>"
 
+  # GENIE_SPACE_ID: a Genie space the app queries via the Genie One agent.
+  # For a zero-setup demo, build one on the samples.nyctaxi.trips table
+  # (the `samples` catalog ships with every Databricks workspace) and paste
+  # its space id here.
   - name: GENIE_SPACE_ID
     value: "<your-genie-space-id>"
 

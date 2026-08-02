@@ -1,5 +1,6 @@
 /* ======================================================
-   NOIRJET — Minimal, classy airline UI theme (black-first)
+   BI Agent — subtle DuBois-inspired theme (navy-teal + oat)
+   Neutral, brandable base. Swap tokens below for your own palette.
    ====================================================== */
 
 /* Typeface */
@@ -10,28 +11,28 @@
    ======================================== */
 
 :root {
-  /* Core palette */
-  --nj-ink: #0b0b0d;          /* primary black */
-  --nj-ink-2: #111215;        /* elevated dark */
-  --nj-ink-3: #1a1c20;        /* hover dark */
-  --nj-text: #0a0a0a;         /* body text on light */
-  --nj-muted: #6b7280;        /* secondary text */
-  --nj-line: #e5e7eb;         /* borders on light */
-  --nj-line-dark: #1f2937;    /* borders on dark */
-  --nj-surface: #ffffff;      /* cards / content */
-  --nj-bg: #f8fafc;           /* app background */
-  --nj-focus: #60a5fa;        /* accessible focus ring (subtle blue) */
+  /* Core palette — DuBois-inspired navy-teal on warm oat */
+  --bi-ink: #1B3139;          /* primary navy-teal (DuBois "navy 800") */
+  --bi-ink-2: #223b45;        /* elevated dark */
+  --bi-ink-3: #2E4A57;        /* hover / slate-teal */
+  --bi-text: #0a0a0a;         /* body text on light */
+  --bi-muted: #5b6b70;        /* secondary text */
+  --bi-line: #e7e2d9;         /* borders on light (warm) */
+  --bi-line-dark: #2a4550;    /* borders on dark */
+  --bi-surface: #ffffff;      /* cards / content */
+  --bi-bg: #f9f7f4;           /* app background (oat cream) */
+  --bi-focus: #2E4A57;        /* accessible focus ring (subtle navy-teal) */
 
   /* Radii & shadows */
-  --nj-radius-sm: 8px;
-  --nj-radius-md: 12px;
-  --nj-radius-lg: 16px;
-  --nj-shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
-  --nj-shadow-md: 0 6px 24px rgba(0,0,0,0.10);
-  --nj-shadow-lg: 0 12px 36px rgba(0,0,0,0.14);
+  --bi-radius-sm: 8px;
+  --bi-radius-md: 12px;
+  --bi-radius-lg: 16px;
+  --bi-shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+  --bi-shadow-md: 0 6px 24px rgba(0,0,0,0.10);
+  --bi-shadow-lg: 0 12px 36px rgba(0,0,0,0.14);
 
   /* Spacing */
-  --nj-gap: 16px;
+  --bi-gap: 16px;
 }
 
 /* ========================================
@@ -44,8 +45,8 @@
 }
 
 html, body {
-  background: var(--nj-bg);
-  color: var(--nj-text);
+  background: var(--bi-bg);
+  color: var(--bi-text);
 }
 
 /* ========================================
@@ -53,9 +54,9 @@ html, body {
    ======================================== */
 
 [data-testid="header"] {
-  background: linear-gradient(180deg, var(--nj-ink) 0%, var(--nj-ink-2) 100%) !important;
-  border-bottom: 1px solid var(--nj-line-dark) !important;
-  box-shadow: var(--nj-shadow-sm) !important;
+  background: linear-gradient(180deg, var(--bi-ink) 0%, var(--bi-ink-2) 100%) !important;
+  border-bottom: 1px solid var(--bi-line-dark) !important;
+  box-shadow: var(--bi-shadow-sm) !important;
   height: 72px !important;
   display: flex !important;
   align-items: center !important;
@@ -63,37 +64,6 @@ html, body {
   padding: 0 24px !important;
   position: relative;
   overflow: hidden;
-}
-
-/* Brand wordmark (text fallback) */
-[data-testid="header"]::before {
-  content: "NoirJet";
-  position: absolute;
-  left: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #fff;
-  font-weight: 700;
-  font-size: 20px;
-  letter-spacing: 0.08em;
-}
-
-/* Optional understated tagline */
-[data-testid="header"]::after {
-  content: "Elevate. Simply.";
-  position: absolute;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgba(255,255,255,0.72);
-  font-weight: 500;
-  font-size: 12px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
 }
 
 [data-testid="header"] > * {
@@ -106,15 +76,15 @@ html, body {
    ======================================== */
 
 [data-testid="sidebar"] {
-  background: linear-gradient(180deg, var(--nj-ink-2) 0%, var(--nj-ink) 100%) !important;
-  border-right: 1px solid var(--nj-line-dark) !important;
+  background: linear-gradient(180deg, var(--bi-ink-2) 0%, var(--bi-ink) 100%) !important;
+  border-right: 1px solid var(--bi-line-dark) !important;
   box-shadow: inset -1px 0 0 rgba(255,255,255,0.02) !important;
 }
 
 [data-testid="sidebar"] [data-testid="sidebar-header"] {
   background: transparent !important;
   color: #fff !important;
-  border-bottom: 1px solid var(--nj-line-dark) !important;
+  border-bottom: 1px solid var(--bi-line-dark) !important;
   padding: 20px !important;
   text-align: left;
   font-weight: 600;
@@ -126,7 +96,7 @@ html, body {
   background: transparent !important;
   color: rgba(255,255,255,0.88) !important;
   border: 1px solid transparent !important;
-  border-radius: var(--nj-radius-sm) !important;
+  border-radius: var(--bi-radius-sm) !important;
   margin: 6px 12px !important;
   padding: 10px 12px !important;
   font-weight: 500 !important;
@@ -135,7 +105,7 @@ html, body {
 
 [data-testid="sidebar"] [role="button"]:hover,
 [data-testid="sidebar"] button:hover {
-  background: var(--nj-ink-3) !important;
+  background: var(--bi-ink-3) !important;
   color: #fff !important;
   border-color: rgba(255,255,255,0.08) !important;
   transform: translateX(2px) !important;
@@ -146,25 +116,25 @@ html, body {
    ======================================== */
 
 [data-testid="message"] {
-  border-radius: var(--nj-radius-md) !important;
-  border: 1px solid var(--nj-line) !important;
+  border-radius: var(--bi-radius-md) !important;
+  border: 1px solid var(--bi-line) !important;
   margin: 16px 0 !important;
   padding: 18px 18px !important;
-  background: var(--nj-surface) !important;
-  box-shadow: var(--nj-shadow-sm) !important;
+  background: var(--bi-surface) !important;
+  box-shadow: var(--bi-shadow-sm) !important;
   transition: box-shadow 200ms ease, transform 200ms ease !important;
 }
 
 [data-testid="message"]:hover {
   transform: translateY(-1px) !important;
-  box-shadow: var(--nj-shadow-md) !important;
+  box-shadow: var(--bi-shadow-md) !important;
 }
 
-/* User bubble: near-black with white text */
+/* User bubble: navy-teal with white text */
 [data-testid="message"][data-testid="user-message"] {
-  background: var(--nj-ink) !important;
+  background: var(--bi-ink) !important;
   color: #ffffff !important;
-  border: 1px solid var(--nj-line-dark) !important;
+  border: 1px solid var(--bi-line-dark) !important;
   margin-left: 40px !important;
 }
 
@@ -174,17 +144,17 @@ html, body {
 
 /* Assistant bubble: white card with left accent bar */
 [data-testid="message"][data-testid="assistant-message"] {
-  background: var(--nj-surface) !important;
-  color: var(--nj-text) !important;
-  border-color: var(--nj-line) !important;
+  background: var(--bi-surface) !important;
+  color: var(--bi-text) !important;
+  border-color: var(--bi-line) !important;
   margin-right: 40px !important;
-  border-left: 4px solid var(--nj-ink) !important;
+  border-left: 4px solid var(--bi-ink) !important;
 }
 
 /* Message author */
 [data-testid="message"] [data-testid="message-author"] {
   font-weight: 700 !important;
-  color: var(--nj-ink) !important;
+  color: var(--bi-ink) !important;
   margin-bottom: 8px !important;
   letter-spacing: 0.02em !important;
 }
@@ -192,8 +162,8 @@ html, body {
 /* Code blocks inside messages */
 [data-testid="message"] pre,
 [data-testid="message"] code {
-  background: #0f172a0d !important; /* subtle slate tint */
-  border: 1px solid var(--nj-line) !important;
+  background: #1b31390d !important; /* subtle navy-teal tint */
+  border: 1px solid var(--bi-line) !important;
   border-radius: 10px !important;
   padding: 0.6em 0.8em !important;
 }
@@ -203,13 +173,13 @@ html, body {
   width: 100%;
   border-collapse: separate !important;
   border-spacing: 0 !important;
-  border: 1px solid var(--nj-line) !important;
+  border: 1px solid var(--bi-line) !important;
   border-radius: 10px !important;
   overflow: hidden !important;
 }
 [data-testid="message"] th,
 [data-testid="message"] td {
-  border-bottom: 1px solid var(--nj-line) !important;
+  border-bottom: 1px solid var(--bi-line) !important;
   padding: 10px 12px !important;
 }
 [data-testid="message"] tr:last-child td {
@@ -221,10 +191,10 @@ html, body {
    ======================================== */
 
 [data-testid="input-container"] {
-  background: var(--nj-surface) !important;
-  border: 1px solid var(--nj-line) !important;
-  border-radius: var(--nj-radius-lg) !important;
-  box-shadow: var(--nj-shadow-sm) !important;
+  background: var(--bi-surface) !important;
+  border: 1px solid var(--bi-line) !important;
+  border-radius: var(--bi-radius-lg) !important;
+  box-shadow: var(--bi-shadow-sm) !important;
   margin: 20px !important;
   padding: 6px !important;
   display: flex;
@@ -234,7 +204,7 @@ html, body {
 [data-testid="input-container"] input,
 [data-testid="input-container"] textarea {
   background: transparent !important;
-  color: var(--nj-text) !important;
+  color: var(--bi-text) !important;
   border: none !important;
   font-size: 16px !important;
   font-weight: 500 !important;
@@ -245,21 +215,21 @@ html, body {
 
 [data-testid="input-container"] input::placeholder,
 [data-testid="input-container"] textarea::placeholder {
-  color: var(--nj-muted) !important;
+  color: var(--bi-muted) !important;
   opacity: 1 !important;
 }
 
 [data-testid="input-container"] input:focus,
 [data-testid="input-container"] textarea:focus {
-  box-shadow: inset 0 0 0 2px var(--nj-focus) !important;
+  box-shadow: inset 0 0 0 2px var(--bi-focus) !important;
   border-radius: 10px !important;
 }
 
 /* Send button */
 [data-testid="input-container"] button {
-  background: var(--nj-ink) !important;
+  background: var(--bi-ink) !important;
   color: #ffffff !important;
-  border: 1px solid var(--nj-ink) !important;
+  border: 1px solid var(--bi-ink) !important;
   border-radius: 10px !important;
   padding: 12px 18px !important;
   font-weight: 600 !important;
@@ -270,50 +240,50 @@ html, body {
 
 [data-testid="input-container"] button:hover {
   transform: translateY(-1px) !important;
-  box-shadow: var(--nj-shadow-md) !important;
-  background: #000 !important;
+  box-shadow: var(--bi-shadow-md) !important;
+  background: var(--bi-ink-3) !important;
 }
 
 /* Accessible focus ring */
 :focus-visible {
-  outline: 2px solid var(--nj-focus) !important;
+  outline: 2px solid var(--bi-focus) !important;
   outline-offset: 2px !important;
   border-radius: 6px;
 }
 
 /* ========================================
-   UTILITIES (NoirJet)
+   UTILITIES
    ======================================== */
 
-.nj-badge {
-  background: var(--nj-ink);
+.bi-badge {
+  background: var(--bi-ink);
   color: #fff;
   padding: 4px 10px;
   border-radius: 999px;
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.06em;
-  border: 1px solid var(--nj-line-dark);
+  border: 1px solid var(--bi-line-dark);
 }
 
-.nj-alert {
-  background: #111827;
+.bi-alert {
+  background: var(--bi-ink-2);
   color: #fff;
-  border: 1px solid var(--nj-line-dark);
+  border: 1px solid var(--bi-line-dark);
   border-radius: 12px;
   padding: 14px 16px;
   margin: 14px 0;
   font-weight: 500;
-  box-shadow: var(--nj-shadow-sm);
+  box-shadow: var(--bi-shadow-sm);
 }
 
-.nj-highlight {
-  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
-  color: var(--nj-text);
+.bi-highlight {
+  background: linear-gradient(180deg, #ffffff 0%, #f9f7f4 100%);
+  color: var(--bi-text);
   padding: 18px;
   border-radius: 12px;
-  border: 1px solid var(--nj-line);
-  box-shadow: var(--nj-shadow-sm);
+  border: 1px solid var(--bi-line);
+  box-shadow: var(--bi-shadow-sm);
 }
 
 /* ========================================
@@ -334,9 +304,6 @@ html, body {
    ======================================== */
 
 @media (max-width: 768px) {
-  [data-testid="header"]::before { font-size: 18px; left: 16px; }
-  [data-testid="header"]::after { display: none; } /* reduce clutter on small screens */
-
   [data-testid="message"] {
     margin-left: 16px !important;
     margin-right: 16px !important;
