@@ -106,3 +106,23 @@ rather than paper over it.
 - MF2 (bundle "Role not found" / app↔db binding provisioning ordering).
 - Deleting the setup job/notebook (cookbook de-brand work, Tasks 10-12).
 - MAS/Genie visualization work.
+
+## As-built addendum (2026-08-02, post live-verification)
+
+Two things differed from the original §4 plan and are the authoritative record:
+
+1. **Bootstrap grant required.** Despite the `CAN_CONNECT_AND_CREATE` binding, the app SP had only
+   `USAGE` (not `CREATE`) on schema `public` and no database-level `CREATE`. `ensure_schema()` cannot
+   create tables on a fresh DB until a one-time `GRANT CREATE ON SCHEMA public TO "<app-sp>"` runs. This
+   grant was added to the setup job notebook (`setup_chainlit_lakebase.ipynb` cell-8, alongside the
+   existing `GRANT USAGE`), which runs as the deploying human who can grant it. The app SP cannot grant
+   this to itself. This is the only manual/bootstrap prerequisite for the ownership model.
+
+2. **Existing-instance migration was destroy+recreate, not REASSIGN OWNED.** §4's `REASSIGN OWNED` /
+   `ALTER TABLE ... OWNER TO` approach was **not possible**: the operator is a member of
+   `databricks_superuser` but not a true PG superuser, and Postgres only lets ownership be handed to a
+   role you can `SET ROLE` into. On the live test instance the tables were therefore backed up, dropped,
+   and recreated by `ensure_schema()` as the app SP (with the CREATE grant in place). Verified live:
+   fresh-create yields app-SP-owned tables, and a real `bundle deploy` preserved
+   tables/ownership/sentinel-row/login with no manual grant. A genuinely fresh cookbook deploy needs no
+   migration — the app SP creates and owns from the start once the bootstrap grant (item 1) is present.
