@@ -1,24 +1,46 @@
 command: ['chainlit', 'run', 'app.py']
 
 
-env: 
+env:
+  # Signing secret for Chainlit auth cookies. Generate one with
+  # `chainlit create-secret` and set it per deployment (do NOT commit a real
+  # value). For a shared workspace you can store it as a Databricks app secret.
   - name: CHAINLIT_AUTH_SECRET
-    value: "F8*9Z/LVfsoHzEt_/IvaI4s1-.1cd/bQ%Bmd5w5$FcXP$ga=taQR_,YE9Q91xnSG"
+    value: "<your-chainlit-auth-secret>"
+
+  # Override these with workspace-specific values for each deployment.
+  # For local development, set them in src/app/.env instead.
+  - name: SERVING_ENDPOINT
+    value: "<your-serving-endpoint>"
+
+  # GENIE_SPACE_ID: a Genie space the app queries via the Genie One agent.
+  # For a zero-setup demo, build one on the samples.nyctaxi.trips table
+  # (the `samples` catalog ships with every Databricks workspace) and paste
+  # its space id here.
+  - name: GENIE_SPACE_ID
+    value: "<your-genie-space-id>"
+
+  - name: REASONING_MODEL
+    value: "databricks-claude-sonnet-4-5"
 
   - name: DATABASE_INSTANCE
-    value: "bi-agent-chat-session"
+    value: "<your-lakebase-instance-name>"
 
-  - name: SERVING_ENDPOINT
-    value: "mas-1a0aee60-endpoint"
+  # AVAILABLE_AGENTS: JSON list of user-selectable agents shown in the agent
+  # picker. Each entry has a "kind": "mas" (routes to a MAS/serving endpoint via
+  # "endpoint") or "genie_one" (routes to the in-app reasoning agent + Genie MCP
+  # via "genie_space_id"). The FIRST entry is the session default, so Genie One
+  # is listed first here. Example with one of each:
+  - name: AVAILABLE_AGENTS
+    value: '[{"name":"Genie One (Direct)","kind":"genie_one","genie_space_id":"<your-genie-space-id>"},{"name":"BI Supervisor (MAS)","kind":"mas","endpoint":"<your-serving-endpoint>"}]'
+
+  # PGDATABASE: Lakebase PostgreSQL database name (config.py reads this as pg_database).
+  # PGHOST, PGPORT, PGUSER are auto-injected by the Lakebase database resource binding.
+  - name: PGDATABASE
+    value: "databricks_postgres"
 
   - name: ENABLE_HEADER_AUTH
     value: true
 
   - name: ENABLE_PASSWORD_AUTH
     value: false
-
-  # - name: DATABASE_INSTANCE
-  #   valueFrom: lakebase_postgres
-    
-  # - name: SERVING_ENDPOINT
-  #   valueFrom: ${var.model_endpoint_name}

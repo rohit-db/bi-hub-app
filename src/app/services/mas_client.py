@@ -32,24 +32,30 @@ class MASChatClient:
     # ---------- Public API ----------
 
     async def stream_raw(
-        self, identity: Identity, messages: List[Dict[str, Any]]
+        self,
+        identity: Identity,
+        messages: List[Dict[str, Any]],
+        endpoint: Optional[str] = None,
     ) -> AsyncIterator[Any]:
         """
         Yield raw streaming events. Choose transport based on identity.auth_type.
         `messages` must be OpenAI-style: [{"role":"user","content":"..."}] (+ history if desired).
+        `endpoint` overrides the instance-level endpoint for per-agent routing.
         """
         bearer = identity.token_source.bearer_token()
         if not bearer:
             raise RuntimeError("Missing bearer token")
 
+        effective_endpoint = endpoint or self._endpoint
+
         if identity.auth_type == "pat":
-            async for ev in self._stream_rest_sse(bearer, messages):
+            async for ev in self._stream_rest_sse(bearer, messages, effective_endpoint):
                 yield ev
             # async for ev in self._stream_openai(bearer, messages): Commented out for now as it is causing issues with out of order events
             #     yield ev
         else:
             # Default to OBO path
-            async for ev in self._stream_rest_sse(bearer, messages):
+            async for ev in self._stream_rest_sse(bearer, messages, effective_endpoint):
                 yield ev
 
     async def create_once(
@@ -116,7 +122,7 @@ class MASChatClient:
     # ---------- OBO path (direct REST SSE) ----------
 
     async def _stream_rest_sse(
-        self, bearer: str, messages: List[Dict[str, Any]]
+        self, bearer: str, messages: List[Dict[str, Any]], endpoint: Optional[str] = None
     ) -> AsyncIterator[Dict[str, Any]]:
         """
         Streaming via raw SSE from /invocations (needed for OBO).
@@ -124,7 +130,8 @@ class MASChatClient:
         """
         logger.info(f"[DEBUG] _stream_rest_sse called with bearer: {bearer}")
         logger.info(f"[DEBUG] token length: {len(bearer)}")
-        url = f"{self._base_url}/{self._endpoint}/invocations"
+        effective = endpoint or self._endpoint
+        url = f"{self._base_url}/{effective}/invocations"
         headers = {
             "Authorization": f"Bearer {bearer}",
             "Content-Type": "application/json",

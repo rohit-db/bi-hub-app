@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="240" height="56" viewBox="0 0 240 56" fill="none">
-  <!-- Generic BI Agent mark: three ascending bars (analytics) inside a rounded square -->
-  <rect x="4" y="8" width="40" height="40" rx="10" fill="#1B3139"/>
+  <rect x="4" y="8" width="40" height="40" rx="10" fill="#2E4A57"/>
   <rect x="13" y="30" width="6" height="10" rx="2" fill="#ffffff"/>
   <rect x="21" y="24" width="6" height="16" rx="2" fill="#ffffff"/>
   <rect x="29" y="18" width="6" height="22" rx="2" fill="#4FD1C5"/>
-  <!-- Wordmark -->
   <text x="58" y="36" font-family="Inter, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-size="24" font-weight="700" fill="#1B3139" letter-spacing="0.5">BI Agent</text>
+        font-size="24" font-weight="700" fill="#ffffff" letter-spacing="0.5">BI Agent</text>
 </svg>

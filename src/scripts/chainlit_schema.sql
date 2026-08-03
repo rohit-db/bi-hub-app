@@ -1,6 +1,7 @@
 -- Chainlit SQLAlchemy Schema for Lakebase
 -- Based on: https://docs.chainlit.io/data-layers/sqlalchemy
 -- Run this in your Lakebase SQL editor
+-- CANONICAL DDL lives in src/app/memory/schema.py (CHAINLIT_DDL). Keep in sync.
 
 -- ==============================================
 -- DATABASE AND SCHEMA SETUP
@@ -76,6 +77,12 @@ CREATE TABLE steps (
     "language" TEXT,
     "indent" INT,
     "defaultOpen" BOOLEAN,
+    -- Added for Chainlit 2.11.1 data layer (StepDict fields not present in the
+    -- older 2.7.x schema). Missing any of these causes psycopg UndefinedColumn
+    -- errors on every step write, breaking chat-history persistence.
+    "autoCollapse" BOOLEAN,
+    "modes" JSONB,
+    "icon" TEXT,
     FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
 );
 

@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from typing import Optional, List, Dict
 
 import os
+import json
 load_dotenv()
 
 
@@ -38,13 +39,35 @@ class Settings(BaseSettings):
             return f"https://{self.databricks_host}/serving-endpoints"
         return f"{self.databricks_host}/serving-endpoints"
 
-    # Chat 
+    # Genie MCP + reasoning agent
+    genie_space_id: Optional[str] = None
+    reasoning_model: str = "databricks-claude-sonnet-4-5"
+    enable_visualization: bool = False
+
+    @property
+    def genie_mcp_url(self) -> str:
+        host = self.databricks_host or ""
+        base = host if host.startswith("https://") else f"https://{host}"
+        return f"{base}/api/2.0/mcp/genie/{self.genie_space_id}"
+
+    def genie_mcp_url_for(self, space_id: str) -> str:
+        host = self.databricks_host or ""
+        base = host if host.startswith("https://") else f"https://{host}"
+        return f"{base}/api/2.0/mcp/genie/{space_id}"
+
+    # Available agents (MAS or Genie One) — deployed via AVAILABLE_AGENTS env / DAB var.
+    # Empty by default; a deployer supplies agents for their workspace.
+    available_agents: List[Dict[str, str]] = []
+
+    # Chat
     history_max_turns: int = 10
     history_max_chars: int = 120000
 
     chat_starter_messages: List[Dict[str, str]] = [
-        {"label": "Revenue Analytics", "message": "Analyze the overall revenue by Segments in 2024"}, 
-        {"label": "Route Performance", "message": "Analyze the performance of FLL to LAS in 2024"}
+        {"label": "Key Metrics", "message": "Summarize key metrics for the last quarter"},
+        {"label": "Top Revenue Items", "message": "Show top 10 items by revenue"},
+        {"label": "Category Breakdown", "message": "Break down results by category"},
+        {"label": "Monthly Trend", "message": "Show month-over-month trend"},
     ]
 
     # Local Only
@@ -81,6 +104,10 @@ env_vars = {
     'pg_sslmode': os.getenv("PGSSLMODE", "require"),
     'databricks_host': os.getenv("DATABRICKS_HOST"),
     'agent_endpoint': os.getenv("SERVING_ENDPOINT"),
+    'genie_space_id': os.getenv("GENIE_SPACE_ID"),
+    'reasoning_model': os.getenv("REASONING_MODEL"),
+    'enable_visualization': os.getenv("ENABLE_VISUALIZATION"),
+    'available_agents': json.loads(os.getenv("AVAILABLE_AGENTS")) if os.getenv("AVAILABLE_AGENTS") else None,
     # Local Only
     'pat': os.getenv("DATABRICKS_TOKEN"),
 }

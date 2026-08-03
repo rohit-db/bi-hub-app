@@ -38,6 +38,14 @@ class ChainlitStream:
             await self.text_msg.send()
         await self.text_msg.stream_token(token or "")
 
+    async def on_visualization(self, element):
+        """Attach a viz element to the current text message (Beta, drop-first)."""
+        if self.text_msg is None:
+            self.text_msg = cl.Message(content=" ")
+            await self.text_msg.send()
+        self.text_msg.elements = [element]
+        await self.text_msg.update()
+
     async def on_text_done(self, text: str):
         if self.text_msg is None:
             self.text_msg = cl.Message(content=text or "")
@@ -54,7 +62,7 @@ class ChainlitStream:
             if df is not None:
                 self.text_msg.content = (remainder or " ").strip()
                 try:
-                    self.text_msg.elements = [cl.Dataframe(df=df, name="Results")]
+                    self.text_msg.elements = [cl.Dataframe(data=df, name="Results")]
                 except Exception:
                     self.text_msg.content = text  # fallback to raw text
             else:

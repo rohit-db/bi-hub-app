@@ -7,43 +7,49 @@ bundle:
 
 # Variables for environment-specific configuration
 variables:
-  
+
   app_name:
     description: "App name"
     default: "bi-agent"
 
   lakebase_instance_name:
-    description: "Database instance name"
+    description: "Lakebase PostgreSQL instance name"
     default: "bi-agent-chat-session"
 
-  model_endpoint_name:
-    description: "Databricks model serving endpoint name"
-    default: "mas-1a0aee60-endpoint"
-  
-  # Catalog configuration
-  lakebase_database_name:
-    description: "Database name for database resources"
+  # Serving endpoint — supply a real MAS or single-model endpoint for your workspace.
+  serving_endpoint:
+    description: "Databricks model serving endpoint name (MAS or single-model)"
+    default: "<your-serving-endpoint>"
+
+  # Lakebase database configuration
+  lakebase_database:
+    description: "Lakebase PostgreSQL database name"
     default: "databricks_postgres"
-  
-  synced_catalog_name:
-    description: "Catalog name for database resources"
-    default: "bi_agent_chat_sessions"
-  
+
+  # Legacy alias used by the setup_lakebase job parameter
+  lakebase_database_name:
+    description: "Alias for lakebase_database (used by setup job)"
+    default: "databricks_postgres"
+
   user_name:
-    description: "User name for permissions"
-    default: "rohit.bhagwat@databricks.com"
+    description: "Workspace user name for permissions"
+    default: "<your-email@example.com>"
 
 sync:
+  # .chainlit/ is a dot-dir; `databricks sync` skips dot-dirs by default, which
+  # silently drops the Chainlit UI config (custom_css, logo, theme settings) from
+  # the deployed app. Explicitly include it so branding actually ships.
+  include:
+    - src/app/.chainlit/**
   exclude:
-    - src/app/.env  
+    - src/app/.env
 
 targets:
   dev:
     mode: development
     default: true
-    workspace:
-      host: https://adb-984752964297111.11.azuredatabricks.net
-    
+    # workspace.host is NOT pinned here — it comes from the CLI profile at deploy time.
+    # Use: databricks bundle deploy -p <your-profile>
     resources:
       jobs:
         setup_lakebase:
@@ -82,19 +88,26 @@ targets:
       
       apps:
         bi-agent:
-          name: ${var.app_name} 
+          name: ${var.app_name}
           description: "AI-powered Business Intelligence Agent"
           resources:
-              - name: agent-endpoint
-                serving_endpoint:
-                  name: ${var.model_endpoint_name}
-                  permission: "CAN_QUERY"
-              - database:
-                  database_name: ${var.lakebase_database_name}
-                  instance_name: ${var.lakebase_instance_name}
-                  permission: CAN_CONNECT_AND_CREATE
-                name: database
-          user_api_scopes: ["serving.serving-endpoints"]
+            - name: agent-endpoint
+              serving_endpoint:
+                name: ${var.serving_endpoint}
+                permission: "CAN_QUERY"
+            - name: database
+              database:
+                database_name: ${var.lakebase_database}
+                instance_name: ${var.lakebase_instance_name}
+                permission: CAN_CONNECT_AND_CREATE
+          # Env vars are defined in src/app/app.yaml (canonical for Databricks Apps).
+          # Deployers set SERVING_ENDPOINT, GENIE_SPACE_ID, DATABASE_INSTANCE, etc.
+          # in app.yaml or via .env for local development.
+          # "serving.serving-endpoints" -> MAS/serving calls; "genie" -> required
+          # OBO scope for the managed Genie MCP server (Genie One path), otherwise
+          # the MCP call returns 403. The app service principal also needs CAN_RUN
+          # on each target Genie space.
+          user_api_scopes: ["serving.serving-endpoints", "genie"]
           source_code_path: ./src/app
           permissions:
             - level: "CAN_USE"

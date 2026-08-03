@@ -5,8 +5,18 @@ from services.mas_client import MASChatClient
 from services.mas_normalizer import normalize
 from services.renderer import ChainlitStream
 from config import settings
+from agent.reasoning_agent import ReasoningAgent
 
 mas_client = MASChatClient()
+
+
+def _raw_events_for(agent_cfg: dict, identity, messages: list[dict]):
+    """Return the raw-event async iterator for the selected agent.
+    kind 'genie_one' -> in-app ReasoningAgent + Genie MCP; else MAS."""
+    kind = (agent_cfg or {}).get("kind", "mas")
+    if kind == "genie_one":
+        return ReasoningAgent(agent_cfg.get("genie_space_id")).stream(identity, messages)
+    return mas_client.stream_raw(identity, messages, endpoint=agent_cfg.get("endpoint"))
 
 HIST_MAX_TURNS = settings.history_max_turns
 HIST_MAX_CHARS = settings.history_max_chars
@@ -90,12 +100,50 @@ async def set_starters():
 async def on_chat_start():
     identity = await ensure_identity()
     logger.info("Chat started")
+    if settings.available_agents:
+        # Default the session to the first agent...
+        cl.user_session.set("agent", settings.available_agents[0])
+        # ...and render the agent picker so users can toggle between the
+        # configured agents (e.g. MAS vs. Genie One) via the chat settings panel.
+        # The Select id "Agent" is what on_settings_update reads.
+        agent_names = [a["name"] for a in settings.available_agents]
+        await cl.ChatSettings(
+            [
+                cl.input_widget.Select(
+                    id="Agent",
+                    label="Agent",
+                    values=agent_names,
+                    initial_index=0,
+                )
+            ]
+        ).send()
+
+
+# Shown when the user's OBO session token has expired (or is about to). OBO
+# tokens live ~1h and cannot be refreshed in-app — a page reload re-mints one.
+SESSION_EXPIRED_MESSAGE = (
+    "⚠️ **Your session has expired.** Please refresh the page to sign back in, "
+    "then resend your message. (Access tokens expire after about an hour of "
+    "inactivity.)"
+)
+
+
+def _is_auth_error(exc: Exception) -> bool:
+    """Heuristic: did this failure come from an expired/insufficient token?"""
+    text = str(exc).lower()
+    return "403" in text or "401" in text or "forbidden" in text or "unauthorized" in text
 
 
 @cl.on_message
 async def on_message(message: cl.Message):
     identity = await ensure_identity()
     logger.info(f"Identity: {identity}")
+
+    # ensure_identity() returns None when the stored OBO token is expired/near
+    # expiry. Prompt a clean re-auth instead of crashing downstream with a 403.
+    if identity is None:
+        await cl.Message(content=SESSION_EXPIRED_MESSAGE).send()
+        return
 
     messages = _build_messages_with_history(message.content)
     logger.info(f"[DEBUG] Messages: {messages}")
@@ -104,7 +152,10 @@ async def on_message(message: cl.Message):
     await renderer.start()
 
     try:
-        raw_events = mas_client.stream_raw(identity, messages)
+        agent_cfg = cl.user_session.get("agent") or (
+            settings.available_agents[0] if settings.available_agents else {"kind": "mas"}
+        )
+        raw_events = _raw_events_for(agent_cfg, identity, messages)
         async for event in normalize(raw_events):
             if event["type"] == "response.created":
                 # Acknowledge the response.created event
@@ -119,7 +170,22 @@ async def on_message(message: cl.Message):
                 await renderer.on_tool_output(event["name"], event["output"])
     except Exception as e:
         logger.error(f"Error: {e}")
-        await cl.Message(content=str(e)).send()
+        # A mid-request 403/401 almost always means the OBO token expired between
+        # ensure_identity() and the downstream call — surface the re-auth prompt
+        # rather than the raw "Failed to connect to MCP server ... 403".
+        if _is_auth_error(e):
+            await cl.Message(content=SESSION_EXPIRED_MESSAGE).send()
+        else:
+            await cl.Message(content=str(e)).send()
+
+
+@cl.on_settings_update
+async def on_settings_update(settings_dict: dict):
+    by_name = {a["name"]: a for a in settings.available_agents}
+    selected = by_name.get(settings_dict.get("Agent"))
+    if selected:
+        cl.user_session.set("agent", selected)
+        await cl.Message(content=f"Switched to **{selected['name']}**").send()
 
 
 @cl.on_chat_resume

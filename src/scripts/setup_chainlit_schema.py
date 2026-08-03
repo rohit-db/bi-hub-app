@@ -110,83 +110,90 @@ def setup_chainlit_schema():
         #     conn.commit()
         # print("✅ Cleaned up any existing tables")
         
-        # Create official Chainlit schema
+        # NOTE: canonical DDL lives in src/app/memory/schema.py (CHAINLIT_DDL); this
+        # standalone script keeps an inline copy because it cannot import app modules
+        # (different sys.path root). Keep in sync.
         print("🔨 Creating official Chainlit schema...")
         schema_sql = text('''
-        CREATE TABLE IF NOT EXISTS users (
-            "id" UUID PRIMARY KEY,
-            "identifier" TEXT NOT NULL UNIQUE,
-            "metadata" JSONB NOT NULL,
-            "createdAt" TEXT
-        );
+CREATE TABLE IF NOT EXISTS users (
+    "id" UUID PRIMARY KEY,
+    "identifier" TEXT NOT NULL UNIQUE,
+    "metadata" JSONB NOT NULL,
+    "createdAt" TEXT
+);
 
-        CREATE TABLE IF NOT EXISTS threads (
-            "id" UUID PRIMARY KEY,
-            "createdAt" TEXT,
-            "name" TEXT,
-            "userId" UUID,
-            "userIdentifier" TEXT,
-            "tags" TEXT[],
-            "metadata" JSONB,
-            FOREIGN KEY ("userId") REFERENCES users("id") ON DELETE CASCADE
-        );
+CREATE TABLE IF NOT EXISTS threads (
+    "id" UUID PRIMARY KEY,
+    "createdAt" TEXT,
+    "name" TEXT,
+    "userId" UUID,
+    "userIdentifier" TEXT,
+    "tags" TEXT[],
+    "metadata" JSONB,
+    FOREIGN KEY ("userId") REFERENCES users("id") ON DELETE CASCADE
+);
 
-        CREATE TABLE IF NOT EXISTS steps (
-            "id" UUID PRIMARY KEY,
-            "name" TEXT NOT NULL,
-            "type" TEXT NOT NULL,
-            "threadId" UUID NOT NULL,
-            "parentId" UUID,
-            "streaming" BOOLEAN NOT NULL,
-            "waitForAnswer" BOOLEAN,
-            "isError" BOOLEAN,
-            "metadata" JSONB,
-            "tags" TEXT[],
-            "input" TEXT,
-            "output" TEXT,
-            "createdAt" TEXT,
-            "command" TEXT,
-            "start" TEXT,
-            "end" TEXT,
-            "generation" JSONB,
-            "showInput" TEXT,
-            "language" TEXT,
-            "indent" INT,
-            "defaultOpen" BOOLEAN,
-            FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
-        );
+CREATE TABLE IF NOT EXISTS steps (
+    "id" UUID PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "threadId" UUID NOT NULL,
+    "parentId" UUID,
+    "streaming" BOOLEAN NOT NULL,
+    "waitForAnswer" BOOLEAN,
+    "isError" BOOLEAN,
+    "metadata" JSONB,
+    "tags" TEXT[],
+    "input" TEXT,
+    "output" TEXT,
+    "createdAt" TEXT,
+    "command" TEXT,
+    "start" TEXT,
+    "end" TEXT,
+    "generation" JSONB,
+    "showInput" TEXT,
+    "language" TEXT,
+    "indent" INT,
+    "defaultOpen" BOOLEAN,
+    "autoCollapse" BOOLEAN,
+    "modes" JSONB,
+    "icon" TEXT,
+    FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
+);
 
-        CREATE TABLE IF NOT EXISTS elements (
-            "id" UUID PRIMARY KEY,
-            "threadId" UUID,
-            "type" TEXT,
-            "url" TEXT,
-            "chainlitKey" TEXT,
-            "name" TEXT NOT NULL,
-            "display" TEXT,
-            "objectKey" TEXT,
-            "size" TEXT,
-            "page" INT,
-            "language" TEXT,
-            "forId" UUID,
-            "mime" TEXT,
-            "props" JSONB,
-            FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
-        );
+CREATE TABLE IF NOT EXISTS elements (
+    "id" UUID PRIMARY KEY,
+    "threadId" UUID,
+    "type" TEXT,
+    "url" TEXT,
+    "chainlitKey" TEXT,
+    "name" TEXT NOT NULL,
+    "display" TEXT,
+    "objectKey" TEXT,
+    "size" TEXT,
+    "page" INT,
+    "language" TEXT,
+    "forId" UUID,
+    "mime" TEXT,
+    "props" JSONB,
+    FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
+);
 
-        CREATE TABLE IF NOT EXISTS feedbacks (
-            "id" UUID PRIMARY KEY,
-            "forId" UUID NOT NULL,
-            "threadId" UUID NOT NULL,
-            "value" INT NOT NULL,
-            "comment" TEXT,
-            FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
-        );
-        ''')
-        
-        with engine.connect() as conn:
+CREATE TABLE IF NOT EXISTS feedbacks (
+    "id" UUID PRIMARY KEY,
+    "forId" UUID NOT NULL,
+    "threadId" UUID NOT NULL,
+    "value" INT NOT NULL,
+    "comment" TEXT,
+    FOREIGN KEY ("threadId") REFERENCES threads("id") ON DELETE CASCADE
+);
+
+ALTER TABLE steps ADD COLUMN IF NOT EXISTS "autoCollapse" BOOLEAN;
+ALTER TABLE steps ADD COLUMN IF NOT EXISTS "modes" JSONB;
+ALTER TABLE steps ADD COLUMN IF NOT EXISTS "icon" TEXT;
+''')
+        with engine.begin() as conn:
             conn.execute(schema_sql)
-            conn.commit()
         print("✅ Created official Chainlit schema")
         
         # Verify tables were created successfully
@@ -204,6 +211,11 @@ def setup_chainlit_schema():
         print(f"❌ Error setting up schema: {e}")
         import traceback
         traceback.print_exc()
+
+# NOTE: Schema-level grants (GRANT USAGE, GRANT CREATE ON SCHEMA "public" to app SP)
+# are issued by the setup job notebook (src/scripts/setup_chainlit_lakebase.ipynb),
+# which runs as the deploying human who owns the schema. This script handles table
+# creation only and does not manage grants.
 
 if __name__ == "__main__":
     setup_chainlit_schema()

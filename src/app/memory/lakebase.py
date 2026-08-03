@@ -2,7 +2,7 @@ from config import settings
 from utils.logging import logger
 from sqlalchemy import create_engine, text, event
 from chainlit.data.sql_alchemy import SQLAlchemyDataLayer
-from data.credentials import LakebaseCredentialProvider
+from memory.credentials import LakebaseCredentialProvider
 
 _credential_provider = LakebaseCredentialProvider()
 
