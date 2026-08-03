@@ -36,6 +36,15 @@
 }
 
 /* ========================================
+   HIDE DEFAULT CHAINLIT WATERMARK
+   ("Built with Chainlit" logo shown above the input)
+   ======================================== */
+
+.watermark {
+  display: none !important;
+}
+
+/* ========================================
    GLOBAL RESET
    ======================================== */
 
@@ -115,30 +124,16 @@ html, body {
    MESSAGES — refined cards
    ======================================== */
 
-[data-testid="message"] {
-  border-radius: var(--bi-radius-md) !important;
-  border: 1px solid var(--bi-line) !important;
-  margin: 16px 0 !important;
-  padding: 18px 18px !important;
-  background: var(--bi-surface) !important;
-  box-shadow: var(--bi-shadow-sm) !important;
-  transition: box-shadow 200ms ease, transform 200ms ease !important;
-}
-
-[data-testid="message"]:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: var(--bi-shadow-md) !important;
-}
-
-/* User bubble: navy-teal with white text */
-[data-testid="message"][data-testid="user-message"] {
+/* User message bubble. In Chainlit 2.11 this is a pill with Tailwind classes
+   `px-5 py-2.5 relative bg-accent rounded-3xl`. Our theme makes --accent a dark
+   navy-teal, so with the default dark `text-foreground` the text was invisible.
+   Make the bubble navy-teal with white text (matches the composer). */
+.bg-accent.rounded-3xl {
   background: var(--bi-ink) !important;
-  color: #ffffff !important;
-  border: 1px solid var(--bi-line-dark) !important;
-  margin-left: 40px !important;
 }
 
-[data-testid="message"][data-testid="user-message"] * {
+.bg-accent.rounded-3xl,
+.bg-accent.rounded-3xl * {
   color: #ffffff !important;
 }
 
@@ -190,58 +185,55 @@ html, body {
    INPUT — quiet elegance
    ======================================== */
 
-[data-testid="input-container"] {
-  background: var(--bi-surface) !important;
-  border: 1px solid var(--bi-line) !important;
-  border-radius: var(--bi-radius-lg) !important;
+/* Chainlit 2.11's composer is <div id="message-composer" class="bg-accent
+   dark:bg-card ...">. With our theme, --accent is dark navy-teal, so the
+   composer surface is dark in BOTH light and dark mode. Everything inside it
+   (the contentEditable text, placeholder, paperclip/gear/send icons) must
+   therefore be light. Force it broadly off the real container id. */
+#message-composer {
+  background: var(--bi-ink) !important;
+  border: 1px solid var(--bi-line-dark) !important;
   box-shadow: var(--bi-shadow-sm) !important;
-  margin: 20px !important;
-  padding: 6px !important;
-  display: flex;
-  gap: 8px;
+  /* The composer's editable text and left icons use Tailwind
+     `text-muted-foreground`, which reads the --muted-foreground token. On this
+     always-dark surface that token must be light. Rebinding it here (rather
+     than blanket color:#fff) keeps Chainlit's own color logic intact. */
+  --muted-foreground: 0 0% 100%;
+  --foreground: 0 0% 100%;
 }
 
-[data-testid="input-container"] input,
-[data-testid="input-container"] textarea {
-  background: transparent !important;
-  color: var(--bi-text) !important;
-  border: none !important;
-  font-size: 16px !important;
-  font-weight: 500 !important;
-  padding: 14px 16px !important;
-  outline: none !important;
-  width: 100% !important;
+/* All text inside the composer -> white (contentEditable editor + spans). */
+#message-composer,
+#message-composer *,
+#chat-input,
+#chat-input * {
+  color: #ffffff !important;
+  caret-color: #ffffff !important;
 }
 
-[data-testid="input-container"] input::placeholder,
-[data-testid="input-container"] textarea::placeholder {
-  color: var(--bi-muted) !important;
+/* contentEditable placeholder (ProseMirror/Tiptap renders it via ::before). */
+#chat-input p.is-editor-empty:first-child::before,
+#chat-input [data-placeholder]::before,
+#chat-input:empty::before {
+  color: rgba(255, 255, 255, 0.55) !important;
   opacity: 1 !important;
 }
 
-[data-testid="input-container"] input:focus,
-[data-testid="input-container"] textarea:focus {
-  box-shadow: inset 0 0 0 2px var(--bi-focus) !important;
-  border-radius: 10px !important;
+/* Icons within the composer (attach/paperclip, settings gear, send arrow). */
+#message-composer svg {
+  color: rgba(255, 255, 255, 0.9) !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
 }
 
-/* Send button */
-[data-testid="input-container"] button {
-  background: var(--bi-ink) !important;
+/* Icon buttons keep a transparent surface so only the glyph shows. */
+#message-composer button {
+  background: transparent !important;
   color: #ffffff !important;
-  border: 1px solid var(--bi-ink) !important;
-  border-radius: 10px !important;
-  padding: 12px 18px !important;
-  font-weight: 600 !important;
-  font-size: 15px !important;
-  cursor: pointer !important;
-  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease !important;
 }
 
-[data-testid="input-container"] button:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: var(--bi-shadow-md) !important;
-  background: var(--bi-ink-3) !important;
+#message-composer button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Accessible focus ring */

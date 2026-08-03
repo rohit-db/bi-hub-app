@@ -119,10 +119,31 @@ async def on_chat_start():
         ).send()
 
 
+# Shown when the user's OBO session token has expired (or is about to). OBO
+# tokens live ~1h and cannot be refreshed in-app — a page reload re-mints one.
+SESSION_EXPIRED_MESSAGE = (
+    "⚠️ **Your session has expired.** Please refresh the page to sign back in, "
+    "then resend your message. (Access tokens expire after about an hour of "
+    "inactivity.)"
+)
+
+
+def _is_auth_error(exc: Exception) -> bool:
+    """Heuristic: did this failure come from an expired/insufficient token?"""
+    text = str(exc).lower()
+    return "403" in text or "401" in text or "forbidden" in text or "unauthorized" in text
+
+
 @cl.on_message
 async def on_message(message: cl.Message):
     identity = await ensure_identity()
     logger.info(f"Identity: {identity}")
+
+    # ensure_identity() returns None when the stored OBO token is expired/near
+    # expiry. Prompt a clean re-auth instead of crashing downstream with a 403.
+    if identity is None:
+        await cl.Message(content=SESSION_EXPIRED_MESSAGE).send()
+        return
 
     messages = _build_messages_with_history(message.content)
     logger.info(f"[DEBUG] Messages: {messages}")
@@ -149,7 +170,13 @@ async def on_message(message: cl.Message):
                 await renderer.on_tool_output(event["name"], event["output"])
     except Exception as e:
         logger.error(f"Error: {e}")
-        await cl.Message(content=str(e)).send()
+        # A mid-request 403/401 almost always means the OBO token expired between
+        # ensure_identity() and the downstream call — surface the re-auth prompt
+        # rather than the raw "Failed to connect to MCP server ... 403".
+        if _is_auth_error(e):
+            await cl.Message(content=SESSION_EXPIRED_MESSAGE).send()
+        else:
+            await cl.Message(content=str(e)).send()
 
 
 @cl.on_settings_update

@@ -36,8 +36,13 @@ variables:
     default: "<your-email@example.com>"
 
 sync:
+  # .chainlit/ is a dot-dir; `databricks sync` skips dot-dirs by default, which
+  # silently drops the Chainlit UI config (custom_css, logo, theme settings) from
+  # the deployed app. Explicitly include it so branding actually ships.
+  include:
+    - src/app/.chainlit/**
   exclude:
-    - src/app/.env  
+    - src/app/.env
 
 targets:
   dev:

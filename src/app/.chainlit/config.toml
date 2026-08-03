@@ -71,10 +71,10 @@ show_sidebar = true
 cot = "full"
 
 # Custom branding — override logo and CSS for your deployment
-custom_css = "public/css/custom-branding.css"
+custom_css = "/public/css/custom-branding.css?v=6"
 
-logo_file_url = "public/images/logo.svg"
-login_page_image = "public/images/logo.svg"
+logo_file_url = "/public/images/logo.svg"
+login_page_image = "/public/images/logo.svg"
 
 # Enable markdown and HTML rendering
 enable_markdown = true

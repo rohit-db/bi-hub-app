@@ -7,15 +7,24 @@ import jwt
 import datetime
 
 
-def _is_token_expired(token: str) -> bool:
-    """Check if the OBO token is expired"""
+# Treat a token as expired this many seconds BEFORE its real exp. The Genie MCP
+# endpoint rejects tokens that are valid but near expiry (observed 403 at ~100s
+# left), so we proactively refuse near-expiry tokens and surface a clean
+# "session expired" prompt instead of a raw 403 mid-request.
+TOKEN_EXPIRY_MARGIN_SECONDS = 120
+
+
+def _is_token_expired(token: str, margin_seconds: int = TOKEN_EXPIRY_MARGIN_SECONDS) -> bool:
+    """Check if the OBO token is expired (or within margin_seconds of expiring)."""
     try:
         decoded = jwt.decode(token, options={"verify_signature": False})
         exp = datetime.datetime.fromtimestamp(decoded["exp"], datetime.timezone.utc)
         time_left = (exp - datetime.datetime.now(datetime.timezone.utc)).total_seconds()
-        
-        if time_left <= 0:
-            logger.warning(f"[AUTH] Token expired {abs(time_left)} seconds ago")
+
+        if time_left <= margin_seconds:
+            logger.warning(
+                f"[AUTH] Token expired or near expiry ({time_left:.0f}s left, "
+                f"margin {margin_seconds}s) — treating as expired")
             return True
         else:
             logger.info(f"[AUTH] Token valid for {time_left} more seconds")
