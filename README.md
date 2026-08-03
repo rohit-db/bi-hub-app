@@ -27,6 +27,8 @@ Session state and chat history are persisted in **Lakebase (PostgreSQL)**.
 
 ![Architecture Diagram](./src/app/public/images/architecture.svg)
 
+*Both agent paths are shown: **Genie One (Direct)** (Chainlit app → OBO/`genie` scope → reasoning agent → Genie MCP → Genie Space) and **BI Supervisor (MAS)** (→ MAS endpoint → Genie/KA agents). Diagram source is `src/app/public/images/architecture.d2` (editable, Databricks-themed); a dark variant is at `architecture-dark.svg`.*
+
 
 ## Example (SAMPLE DUMMY DATA)
 

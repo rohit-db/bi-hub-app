@@ -1,0 +1,57 @@
+# BI Hub — High-Level Architecture (Chainlit app, two agent paths).
+#   render_d2.sh architecture.d2 architecture.svg          # light
+#   render_d2.sh --both architecture.d2 architecture.svg   # light + dark
+# Color comes from the prepended Databricks theme; author color-free.
+
+direction: right
+vars: { d2-config: { layout-engine: dagre; pad: 30 } }
+
+title: |md
+  # BI Hub using Chainlit — High-Level Architecture
+| { near: top-center; style: { font-size: 26; bold: true } }
+
+user: User\n(Browser) { class: source }
+
+dbx: Databricks {
+  class: group
+
+  app: BI Hub App\n(Chainlit) { class: compute; icon: ${ICONS}/databricks/apps.svg }
+
+  lakebase: Lakebase (Postgres)\nSession State + Chat History { class: store; icon: ${ICONS}/databricks/lakebase.svg }
+
+  # Path 1 — Genie One (Direct): in-app reasoning agent -> managed Genie MCP -> one Genie Space
+  genieone: Genie One (Direct) {
+    class: group
+    reason: Reasoning Agent\n(Foundation Model) { class: compute; icon: ${ICONS}/databricks/model_serving.svg }
+    mcp: Genie MCP Server\n/api/2.0/mcp/genie { class: serve; icon: ${ICONS}/databricks/unity_ai_gateway.svg }
+    space: Genie Space { class: compute; icon: ${ICONS}/databricks/genie.svg }
+    reason -> mcp: tool call
+    mcp -> space
+  }
+
+  # Path 2 — BI Supervisor (MAS): serving endpoint routing across Genie + KA
+  mas: Multi-Agent Supervisor\nEndpoint { class: compute; icon: ${ICONS}/databricks/agent_bricks.svg }
+  genie_a: Genie Agent { class: compute; icon: ${ICONS}/databricks/genie.svg }
+  genie_b: Genie Agent … { class: compute; icon: ${ICONS}/databricks/genie.svg }
+  ka: Knowledge Assistant { class: compute; icon: ${ICONS}/databricks/agent_bricks.svg }
+
+  warehouse: Serverless SQL Warehouse { class: store; icon: ${ICONS}/databricks/sql_warehouse.svg }
+  uc: Unity Catalog\nGovernance { class: govern; icon: ${ICONS}/databricks/unity_catalog.svg }
+}
+
+user -> dbx.app: SSO
+
+dbx.app -> dbx.lakebase: Service Principal
+dbx.app -> dbx.genieone.reason: SSO (OBO, genie scope) { class: accent }
+dbx.app -> dbx.mas: SSO (OBO headers) { class: accent }
+
+dbx.mas -> dbx.genie_a
+dbx.mas -> dbx.genie_b
+dbx.mas -> dbx.ka
+
+dbx.genieone.space -> dbx.warehouse
+dbx.genie_a -> dbx.warehouse
+dbx.genie_b -> dbx.warehouse
+dbx.ka -> dbx.warehouse
+
+dbx.uc -> dbx.warehouse: { class: govlink }
